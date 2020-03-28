@@ -11,6 +11,9 @@ var random = document.getElementById('random');
 var guideline = document.getElementById('guideline');
 var hide_hour_number = document.getElementById('hide_hour_number');
 var color = document.getElementById('color');
+var hide_pointer = document.getElementById('hide_pointer');
+var quick_minus = document.getElementById('quick_minus');
+var btn_reset = document.getElementById('btn_reset');
 
 var hideSecondPoint = false;
 var hideMinuteNumberAll = false;
@@ -19,10 +22,12 @@ var hideHourNumber = false;
 var isRandomTime = false;
 var isClear = false;
 var needGuideLine = false;
-var hour//获取当前小时
-var minute;//获取分钟
-var second;//获取秒
+var mHour//获取当前小时
+var mMinute;//获取分钟
+var mSecond;//获取秒
 var isColor = false;
+var displayPointer = true;
+var quickMinus = false;
 
 function drawBackground(argument) {//设置背景
 	// body...
@@ -178,66 +183,98 @@ function drawDot() {//画出中间的小圆点相当于设置一个让三个针�
 function draw(hour, minute, second) {//把三个指针放在这个函数中
 	ctx.clearRect(0, 0, width, height);//清除指针运动时留下的轨迹
 	if(hour != null && minute != null && second != 0){
-		
+		if(quickMinus){
+			mMinute = minute + 1;//获取分钟 快速模式是1秒钟代表一分钟
+			if(minute == 60){
+				mMinute = 0;
+				mHour = (hour + 1) % 24;
+			} else {
+				mHour = hour;
+			}
+			mSecond = 1;
+		}
 	}else{
 		var now = new Date();
-		hour = now.getHours();//获取当前小时
-		minute = now.getMinutes();//获取分钟
-		second = now.getSeconds();//获取秒
+		mHour = now.getHours();//获取当前小时
+		mMinute = now.getMinutes();//获取分钟
+		mSecond = now.getSeconds();//获取秒
 	}
 
 	drawBackground();	//调用函数
-	drawHour(hour, minute);
-	drawMintue(minute);
-	if(!hideSecondPoint){
-		drawSecond(second);
-	}
 	drawDot();
+	
+	if(displayPointer){
+		drawHour(mHour, mMinute);
+		drawMintue(mMinute);
+		if(!hideSecondPoint && !quickMinus){
+			drawSecond(mSecond);
+		}
+	}
+	
 	ctx.restore();//返回之前保存过的路径状态和属性
 }
  
-var id = setInterval(draw, 1000);//每过一秒执行一次
+var defaultTimer = setInterval(draw, 1000);//每过一秒执行一次
 draw();
+
 hide_second_point.onclick = function(){
 	hideSecondPoint = !hideSecondPoint;
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
 }
 
 hide_minute_number.onclick = function(){
 	hideMinuteNumber = !hideMinuteNumber;
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
 }
 
 hide_minute_number_all.onclick = function(){
 	hideMinuteNumberAll = !hideMinuteNumberAll;
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
 }
 
 random.onclick = function(){
 	isRandomTime = true;
 	if(isRandomTime){
-		hour = parseInt(Math.random() * 23);
-		minute = parseInt(Math.random() * 59);
-		second = parseInt(Math.random() * 59);
+		mHour = parseInt(Math.random() * 23);
+		mMinute = parseInt(Math.random() * 59);
+		mSecond = parseInt(Math.random() * 59);
 		if(!isClear){
 			isClear = true;
-			window.clearInterval(id);
+			window.clearInterval(defaultTimer);
 		}
 	}
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
 }
 
 guideline.onclick = function(){
 	needGuideLine = !needGuideLine;
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
 }
 
 hide_hour_number.onclick = function(){
 	hideHourNumber = !hideHourNumber;
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
 }
 
 color.onclick = function(){
 	isColor = !isColor;
-	draw(hour, minute, second);
+	draw(mHour, mMinute, mSecond);
+}
+
+hide_pointer.onclick = function(){
+	displayPointer = !displayPointer;
+	draw(mHour, mMinute, mSecond);
+}
+
+quick_minus.onclick = function(){
+	quickMinus = true;
+	draw(mHour, mMinute, mSecond);
+	if(!isClear){
+		isClear = true;
+		window.clearInterval(defaultTimer);
+	}
+}
+btn_reset.onclick = function(){
+	console.log("reload...");
+	window.location.reload();
 }
